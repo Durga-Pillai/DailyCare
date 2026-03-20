@@ -30,7 +30,7 @@ export default function FilterBar() {
   const hasFilters = selectedRoles.length > 0 || timeFilter !== 'all' || searchQuery !== ''
 
   return (
-    <div style={{
+    <div className="filter-bar" style={{
       background: '#fff',
       border: '1px solid var(--slate-200)',
       borderRadius: 'var(--radius-lg)',
@@ -45,6 +45,7 @@ export default function FilterBar() {
 
       {/* Search */}
       <div
+        className="search-box"
         style={{
           display: 'flex', alignItems: 'center', gap: '8px',
           background: 'var(--slate-50)',

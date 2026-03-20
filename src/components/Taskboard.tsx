@@ -38,7 +38,7 @@ function PatientRow({ patientId, patientName, age, dialysisType, patient }: {
       borderRadius: '12px',
     }}>
       {/* Patient header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+      <div className="patient-header" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
         <h3 style={{ margin: 0, fontSize: '15px' }}>
           {patientName}
           <span style={{ fontWeight: 400, color: '#666', marginLeft: '8px' }}>
@@ -63,7 +63,7 @@ function PatientRow({ patientId, patientName, age, dialysisType, patient }: {
       </div>
 
       {/* Columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+      <div className="kanban-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
         {STATUS_COLUMNS.map(status => {
           const columnTasks = filtered.filter(t => t.status === status)
           return (

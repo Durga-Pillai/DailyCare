@@ -67,3 +67,62 @@ html, body, #root {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--slate-400); }
+
+/* ── Responsive ────────────────────────────────────── */
+
+/* Tablet — 768px to 1024px */
+@media (max-width: 1024px) {
+  main {
+    padding: 20px 16px !important;
+  }
+}
+
+/* Mobile — under 768px */
+@media (max-width: 768px) {
+
+  /* Stack kanban columns vertically */
+  .kanban-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Filter bar wraps */
+  .filter-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+
+  /* Search takes full width */
+  .search-box {
+    width: 100% !important;
+    min-width: unset !important;
+  }
+
+  /* Patient header stacks */
+  .patient-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  /* Nav padding */
+  header {
+    padding: 0 16px !important;
+  }
+
+  /* Page title */
+  h1 {
+    font-size: 18px !important;
+  }
+}
+
+/* Small mobile — under 480px */
+@media (max-width: 480px) {
+  main {
+    padding: 12px !important;
+  }
+
+  h1 {
+    font-size: 16px !important;
+  }
+}
