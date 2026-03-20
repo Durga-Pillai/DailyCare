@@ -118,6 +118,16 @@ export const handlers = [
     tasks.push(newTask)
     return HttpResponse.json(newTask, { status: 201 })
   }),
+  // DELETE /tasks/:id
+http.delete('http://localhost:3000/tasks/:taskId', ({ params }) => {
+  const { taskId } = params
+  const index = tasks.findIndex(t => t.id === taskId)
+  if (index === -1) {
+    return HttpResponse.json({ message: 'Task not found' }, { status: 404 })
+  }
+  tasks.splice(index, 1)
+  return HttpResponse.json({ success: true }, { status: 200 })
+}),
 
   // PATCH /tasks/:id
   http.patch('http://localhost:3000/tasks/:taskId', async ({ request, params }) => {
@@ -137,3 +147,4 @@ export const handlers = [
     return HttpResponse.json(tasks[index])
   }),
 ]
+

@@ -78,3 +78,8 @@ export async function updateTask(
     return res.data
   })
 }
+export async function deleteTask(taskId: string): Promise<void> {
+  return withRetry(async () => {
+    await client.delete(`/tasks/${taskId}`)
+  })
+}

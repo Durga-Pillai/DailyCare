@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useUpdateTask } from '../state/useTasks'
+import { useUpdateTask, useDeleteTask } from '../state/useTasks'
 import type { Task, TaskStatus } from '../api/types'
 
 interface Props { task: Task; patientId: string }
 
-const STATUS_NEXT: Record<TaskStatus, TaskStatus> = {
-  todo: 'in_progress', in_progress: 'done', done: 'todo',
+const STATUS_NEXT: Partial<Record<TaskStatus, TaskStatus>> = {
+  todo:        'in_progress',
+  in_progress: 'done',
 }
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; bg: string; color: string; border: string }> = {
@@ -21,8 +22,10 @@ const ROLE_CONFIG: Record<Task['assignedRole'], { label: string; color: string; 
 }
 
 export default function TaskCard({ task, patientId }: Props) {
-  const { mutate: updateTask, isPending } = useUpdateTask(patientId)
-  const [showError, setShowError] = useState(false)
+  const { mutate: updateTask, isPending: isUpdating } = useUpdateTask(patientId)
+  const { mutate: deleteTask, isPending: isDeleting } = useDeleteTask(patientId)
+  const [showError,         setShowError]         = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const today = new Date(); today.setHours(0,0,0,0)
   const due   = new Date(task.dueDate); due.setHours(0,0,0,0)
@@ -30,9 +33,27 @@ export default function TaskCard({ task, patientId }: Props) {
   const isOverdue  = diff < 0  && task.status !== 'done'
   const isDueToday = diff === 0 && task.status !== 'done'
 
+  const isPending = isUpdating || isDeleting
   const statusCfg = STATUS_CONFIG[task.status]
   const roleCfg   = ROLE_CONFIG[task.assignedRole]
-  const nextLabel = STATUS_CONFIG[STATUS_NEXT[task.status]].label
+  const nextStatus = STATUS_NEXT[task.status]
+  const nextLabel  = nextStatus ? STATUS_CONFIG[nextStatus].label : null
+
+  function handleStatusClick() {
+    if (!nextStatus) return
+    setShowError(false)
+    updateTask(
+      { taskId: task.id, dto: { status: nextStatus } },
+      { onError: () => setShowError(true) }
+    )
+  }
+
+  function handleDelete() {
+    deleteTask(task.id, {
+      onError: () => setShowError(true),
+    })
+    setShowDeleteConfirm(false)
+  }
 
   return (
     <div
@@ -49,7 +70,7 @@ export default function TaskCard({ task, patientId }: Props) {
       onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}
     >
-      {/* Title — no icon */}
+      {/* Title */}
       <div style={{ marginBottom: '10px' }}>
         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--slate-800)', lineHeight: 1.4 }}>
           {task.title}
@@ -72,7 +93,7 @@ export default function TaskCard({ task, patientId }: Props) {
         )}
       </div>
 
-      {/* Due date — no calendar icon */}
+      {/* Due date */}
       <div style={{
         fontSize: '13px', fontFamily: 'var(--font-mono)',
         color: isOverdue ? 'var(--red-600)' : isDueToday ? 'var(--amber-600)' : 'var(--slate-400)',
@@ -85,8 +106,8 @@ export default function TaskCard({ task, patientId }: Props) {
 
       {/* Status button */}
       <button
-        onClick={() => { setShowError(false); updateTask({ taskId: task.id, dto: { status: STATUS_NEXT[task.status] } }, { onError: () => setShowError(true) }) }}
-        disabled={isPending}
+        onClick={handleStatusClick}
+        disabled={isPending || task.status === 'done'}
         style={{
           width: '100%', padding: '6px 0',
           borderRadius: 'var(--radius-sm)',
@@ -94,19 +115,88 @@ export default function TaskCard({ task, patientId }: Props) {
           background: statusCfg.bg, color: statusCfg.color,
           fontSize: '13px', fontWeight: 600,
           fontFamily: 'var(--font-sans)',
-          cursor: isPending ? 'not-allowed' : 'pointer',
+          cursor: isPending || task.status === 'done' ? 'not-allowed' : 'pointer',
+          opacity: task.status === 'done' ? 0.7 : 1,
           transition: 'all 0.15s',
         }}
       >
-        {isPending ? 'Saving...' : statusCfg.label}
+        {isUpdating ? 'Saving...' : statusCfg.label}
       </button>
 
-      {!isPending && (
+      {/* Next step hint */}
+      {!isPending && nextLabel && (
         <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--slate-400)', marginTop: '4px' }}>
           → {nextLabel}
         </div>
       )}
 
+      {/* Delete button — only when done */}
+      {task.status === 'done' && !showDeleteConfirm && (
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          disabled={isPending}
+          style={{
+            width: '100%', padding: '6px 0',
+            marginTop: '8px',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid var(--red-100)',
+            background: 'var(--red-50)', color: 'var(--red-600)',
+            fontSize: '12px', fontWeight: 600,
+            fontFamily: 'var(--font-sans)',
+            cursor: isPending ? 'not-allowed' : 'pointer',
+            transition: 'all 0.15s',
+          }}
+        >
+          Delete Task
+        </button>
+      )}
+
+      {/* Delete confirmation */}
+      {showDeleteConfirm && (
+        <div style={{
+          marginTop: '8px',
+          padding: '10px',
+          background: 'var(--red-50)',
+          border: '1px solid var(--red-100)',
+          borderRadius: 'var(--radius-sm)',
+        }}>
+          <div style={{ fontSize: '12px', color: 'var(--red-600)', marginBottom: '8px', fontWeight: 600 }}>
+            Delete this task?
+          </div>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              style={{
+                flex: 1, padding: '5px 0',
+                borderRadius: 'var(--radius-sm)',
+                border: '1px solid var(--slate-200)',
+                background: '#fff', color: 'var(--slate-600)',
+                fontSize: '12px', fontWeight: 600,
+                cursor: 'pointer', fontFamily: 'var(--font-sans)',
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              style={{
+                flex: 1, padding: '5px 0',
+                borderRadius: 'var(--radius-sm)',
+                border: 'none',
+                background: 'var(--red-600)', color: '#fff',
+                fontSize: '12px', fontWeight: 600,
+                cursor: isDeleting ? 'not-allowed' : 'pointer',
+                fontFamily: 'var(--font-sans)',
+              }}
+            >
+              {isDeleting ? 'Deleting...' : 'Confirm'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Error */}
       {showError && (
         <div style={{
           marginTop: '8px', padding: '6px 10px',

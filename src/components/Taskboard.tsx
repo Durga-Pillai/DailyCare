@@ -10,9 +10,9 @@ import CreateTaskModal from './CreateTaskModal'
 
 const STATUS_COLUMNS = ['todo', 'in_progress', 'done'] as const
 const COLUMN_LABEL = {
-  todo:        '⬜ Todo',
-  in_progress: '🟡 In Progress',
-  done:        '✅ Done',
+  todo:        'Todo',
+  in_progress: 'In Progress',
+  done:        'Done',
 }
 
 function PatientRow({ patientId, patientName, age, dialysisType, patient }: {
@@ -113,7 +113,7 @@ function PatientRow({ patientId, patientName, age, dialysisType, patient }: {
 
 export default function Taskboard() {
   const { patients, isLoading, isError } = usePatients()
-   const { searchQuery } = useFilters()
+  const { searchQuery } = useFilters()
 
   const filteredPatients = patients.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -124,32 +124,32 @@ export default function Taskboard() {
 
   return (
     <div>
-     <FilterBar />
+      <FilterBar />
 
-    {filteredPatients.length === 0 && searchQuery && (
-      <div style={{
-        textAlign: 'center',
-        padding: '48px 20px',
-        color: 'var(--slate-400)',
-        fontSize: '14px',
-        background: '#fff',
-        borderRadius: 'var(--radius-lg)',
-        border: '1px solid var(--slate-200)',
-      }}>
-        No patients found matching "{searchQuery}"
-      </div>
-    )}
+      {filteredPatients.length === 0 && searchQuery && (
+        <div style={{
+          textAlign: 'center',
+          padding: '48px 20px',
+          color: 'var(--slate-400)',
+          fontSize: '14px',
+          background: '#fff',
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--slate-200)',
+        }}>
+          No patients found matching "{searchQuery}"
+        </div>
+      )}
 
-    {filteredPatients.map(p => (
-      <PatientRow
-        key={p.id}
-        patientId={p.id}
-        patientName={p.name}
-        age={p.age}
-        dialysisType={p.dialysisType}
-        patient={p}
-      />
-    ))}
+      {filteredPatients.map(p => (
+        <PatientRow
+          key={p.id}
+          patientId={p.id}
+          patientName={p.name}
+          age={p.age}
+          dialysisType={p.dialysisType}
+          patient={p}
+        />
+      ))}
     </div>
   )
 }
