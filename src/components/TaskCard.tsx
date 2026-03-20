@@ -20,11 +20,6 @@ const ROLE_CONFIG: Record<Task['assignedRole'], { label: string; color: string; 
   social_worker: { label: 'Social Worker', color: '#6D28D9',         bg: '#F5F3FF'         },
 }
 
-const CATEGORY_ICON: Record<Task['category'], string> = {
-  monthly_labs: '🧪', access_check: '🔍', diet_counselling: '🥗',
-  vaccination: '💉', social_work: '🤝', other: '📋',
-}
-
 export default function TaskCard({ task, patientId }: Props) {
   const { mutate: updateTask, isPending } = useUpdateTask(patientId)
   const [showError, setShowError] = useState(false)
@@ -54,13 +49,14 @@ export default function TaskCard({ task, patientId }: Props) {
       onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
       onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}
     >
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
-        <span style={{ fontSize: '14px', flexShrink: 0 }}>{CATEGORY_ICON[task.category]}</span>
+      {/* Title — no icon */}
+      <div style={{ marginBottom: '10px' }}>
         <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--slate-800)', lineHeight: 1.4 }}>
           {task.title}
         </span>
       </div>
 
+      {/* Role badge */}
       <div style={{ marginBottom: '8px' }}>
         <span style={{
           display: 'inline-block', fontSize: '11px', fontWeight: 500,
@@ -76,17 +72,18 @@ export default function TaskCard({ task, patientId }: Props) {
         )}
       </div>
 
+      {/* Due date — no calendar icon */}
       <div style={{
         fontSize: '13px', fontFamily: 'var(--font-mono)',
         color: isOverdue ? 'var(--red-600)' : isDueToday ? 'var(--amber-600)' : 'var(--slate-400)',
         marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px',
       }}>
-        <span>📅</span>
         <span>{task.dueDate}</span>
         {isOverdue  && <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600 }}>· Overdue</span>}
         {isDueToday && <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600 }}>· Today</span>}
       </div>
 
+      {/* Status button */}
       <button
         onClick={() => { setShowError(false); updateTask({ taskId: task.id, dto: { status: STATUS_NEXT[task.status] } }, { onError: () => setShowError(true) }) }}
         disabled={isPending}
@@ -101,7 +98,7 @@ export default function TaskCard({ task, patientId }: Props) {
           transition: 'all 0.15s',
         }}
       >
-        {isPending ? '⏳ Saving...' : `● ${statusCfg.label}`}
+        {isPending ? 'Saving...' : statusCfg.label}
       </button>
 
       {!isPending && (
@@ -117,7 +114,7 @@ export default function TaskCard({ task, patientId }: Props) {
           borderRadius: 'var(--radius-sm)', color: 'var(--red-600)',
           fontSize: '13px', textAlign: 'center',
         }}>
-          ⚠ Failed to update. Reverted.
+          Failed to update. Reverted.
         </div>
       )}
     </div>
