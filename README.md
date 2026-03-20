@@ -114,7 +114,7 @@ AI used - Claude
 
 ### One example where I disagreed with AI output
 
-The initaila generated code was a status cycle that went todo-> in progress -> done ->todo.
+The initaila generated code was a status cycle that went todo-> in progress -> done ->todo
 
 resolving TypeScript errors, test failures, and MSW
 configuration issues that came up during development
