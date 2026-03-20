@@ -1,156 +1,123 @@
-// src/components/TaskCard.tsx
-
 import { useState } from 'react'
 import { useUpdateTask } from '../state/useTasks'
 import type { Task, TaskStatus } from '../api/types'
 
-interface Props {
-  task: Task
-  patientId: string
-}
+interface Props { task: Task; patientId: string }
 
 const STATUS_NEXT: Record<TaskStatus, TaskStatus> = {
-  todo:        'in_progress',
-  in_progress: 'done',
-  done:        'todo',
+  todo: 'in_progress', in_progress: 'done', done: 'todo',
 }
 
-const STATUS_LABEL: Record<TaskStatus, string> = {
-  todo:        '⬜ Todo',
-  in_progress: '🟡 In Progress',
-  done:        '✅ Done',
+const STATUS_CONFIG: Record<TaskStatus, { label: string; bg: string; color: string; border: string }> = {
+  todo:        { label: 'To Do',       bg: 'var(--slate-100)', color: 'var(--slate-600)', border: 'var(--slate-300)' },
+  in_progress: { label: 'In Progress', bg: 'var(--amber-50)',  color: 'var(--amber-600)', border: 'var(--amber-500)' },
+  done:        { label: 'Done',        bg: 'var(--green-50)',  color: 'var(--green-600)', border: 'var(--green-500)' },
 }
 
-const STATUS_BG: Record<TaskStatus, string> = {
-  todo:        '#ffffff',
-  in_progress: '#fff8e1',
-  done:        '#e8f5e9',
+const ROLE_CONFIG: Record<Task['assignedRole'], { label: string; color: string; bg: string }> = {
+  nurse:         { label: 'Nurse',         color: 'var(--blue-700)', bg: 'var(--blue-50)'  },
+  dietician:     { label: 'Dietician',     color: '#0E7490',         bg: '#ECFEFF'         },
+  social_worker: { label: 'Social Worker', color: '#6D28D9',         bg: '#F5F3FF'         },
 }
 
-const ROLE_LABEL: Record<Task['assignedRole'], string> = {
-  nurse:         '🩺 Nurse',
-  dietician:     '🥗 Dietician',
-  social_worker: '🤝 Social Worker',
+const CATEGORY_ICON: Record<Task['category'], string> = {
+  monthly_labs: '🧪', access_check: '🔍', diet_counselling: '🥗',
+  vaccination: '💉', social_work: '🤝', other: '📋',
 }
 
 export default function TaskCard({ task, patientId }: Props) {
-  const { mutate: updateTask, isPending, isError } = useUpdateTask(patientId)
+  const { mutate: updateTask, isPending } = useUpdateTask(patientId)
   const [showError, setShowError] = useState(false)
 
-  function handleStatusClick() {
-    const nextStatus = STATUS_NEXT[task.status]
-    setShowError(false)
+  const today = new Date(); today.setHours(0,0,0,0)
+  const due   = new Date(task.dueDate); due.setHours(0,0,0,0)
+  const diff  = Math.ceil((due.getTime() - today.getTime()) / 86400000)
+  const isOverdue  = diff < 0  && task.status !== 'done'
+  const isDueToday = diff === 0 && task.status !== 'done'
 
-    updateTask(
-      { taskId: task.id, dto: { status: nextStatus } },
-      {
-        onError: () => setShowError(true),
-      }
-    )
-  }
-
-  // Is this task overdue?
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const due = new Date(task.dueDate)
-  due.setHours(0, 0, 0, 0)
-  const isOverdue = due < today && task.status !== 'done'
+  const statusCfg = STATUS_CONFIG[task.status]
+  const roleCfg   = ROLE_CONFIG[task.assignedRole]
+  const nextLabel = STATUS_CONFIG[STATUS_NEXT[task.status]].label
 
   return (
-    <div style={{
-      padding: '12px',
-      border: `1px solid ${isOverdue ? '#ffcccc' : '#ddd'}`,
-      borderRadius: '8px',
-      fontSize: '13px',
-      background: STATUS_BG[task.status],
-      minWidth: '180px',
-      maxWidth: '220px',
-      opacity: isPending ? 0.6 : 1,
-      transition: 'opacity 0.2s',
-      position: 'relative',
-    }}>
+    <div
+      style={{
+        background: '#fff',
+        border: `1px solid ${isOverdue ? 'var(--red-100)' : 'var(--slate-200)'}`,
+        borderLeft: `3px solid ${isOverdue ? 'var(--red-500)' : isDueToday ? 'var(--amber-500)' : 'var(--blue-400)'}`,
+        borderRadius: 'var(--radius-md)',
+        padding: '12px 14px',
+        boxShadow: 'var(--shadow-sm)',
+        opacity: isPending ? 0.65 : 1,
+        transition: 'opacity 0.2s, box-shadow 0.15s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.boxShadow = 'var(--shadow-md)')}
+      onMouseLeave={e => (e.currentTarget.style.boxShadow = 'var(--shadow-sm)')}
+    >
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', alignItems: 'flex-start' }}>
+        <span style={{ fontSize: '14px', flexShrink: 0 }}>{CATEGORY_ICON[task.category]}</span>
+        <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--slate-800)', lineHeight: 1.4 }}>
+          {task.title}
+        </span>
+      </div>
 
-      {/* Overdue badge */}
-      {isOverdue && (
-        <div style={{
-          position: 'absolute',
-          top: '8px',
-          right: '8px',
-          background: '#ff4444',
-          color: '#fff',
-          fontSize: '10px',
-          padding: '2px 6px',
-          borderRadius: '10px',
-          fontWeight: 600,
+      <div style={{ marginBottom: '8px' }}>
+        <span style={{
+          display: 'inline-block', fontSize: '11px', fontWeight: 500,
+          color: roleCfg.color, background: roleCfg.bg,
+          padding: '2px 8px', borderRadius: '99px',
         }}>
-          OVERDUE
-        </div>
-      )}
-
-      {/* Title */}
-      <div style={{ fontWeight: 600, marginBottom: '6px', paddingRight: '60px' }}>
-        {task.title}
+          {roleCfg.label}
+        </span>
+        {task.assigneeName && (
+          <span style={{ fontSize: '11px', color: 'var(--slate-400)', marginLeft: '6px' }}>
+            {task.assigneeName}
+          </span>
+        )}
       </div>
 
-      {/* Role */}
-      <div style={{ color: '#666', marginBottom: '4px' }}>
-        {ROLE_LABEL[task.assignedRole]}
-      </div>
-
-      {/* Assignee */}
-      {task.assigneeName && (
-        <div style={{ color: '#888', fontSize: '12px', marginBottom: '4px' }}>
-          👤 {task.assigneeName}
-        </div>
-      )}
-
-      {/* Due date */}
       <div style={{
-        color: isOverdue ? '#cc0000' : '#999',
-        fontSize: '12px',
-        marginBottom: '10px',
+        fontSize: '11px', fontFamily: 'var(--font-mono)',
+        color: isOverdue ? 'var(--red-600)' : isDueToday ? 'var(--amber-600)' : 'var(--slate-400)',
+        marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px',
       }}>
-        📅 {task.dueDate}
+        <span>📅</span>
+        <span>{task.dueDate}</span>
+        {isOverdue  && <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600 }}>· Overdue</span>}
+        {isDueToday && <span style={{ fontFamily: 'var(--font-sans)', fontWeight: 600 }}>· Today</span>}
       </div>
 
-      {/* Status button — triggers optimistic update */}
       <button
-        onClick={handleStatusClick}
+        onClick={() => { setShowError(false); updateTask({ taskId: task.id, dto: { status: STATUS_NEXT[task.status] } }, { onError: () => setShowError(true) }) }}
         disabled={isPending}
         style={{
-          width: '100%',
-          padding: '5px 0',
-          borderRadius: '6px',
-          border: '1px solid #ddd',
-          background: isPending ? '#f0f0f0' : '#fff',
+          width: '100%', padding: '6px 0',
+          borderRadius: 'var(--radius-sm)',
+          border: `1px solid ${statusCfg.border}`,
+          background: statusCfg.bg, color: statusCfg.color,
+          fontSize: '11px', fontWeight: 600,
+          fontFamily: 'var(--font-sans)',
           cursor: isPending ? 'not-allowed' : 'pointer',
-          fontSize: '12px',
-          fontWeight: 600,
+          transition: 'all 0.15s',
         }}
       >
-        {isPending ? '⏳ Saving...' : STATUS_LABEL[task.status]}
+        {isPending ? '⏳ Saving...' : `● ${statusCfg.label}`}
       </button>
 
-      {/* Click hint */}
       {!isPending && (
-        <div style={{ textAlign: 'center', fontSize: '11px', color: '#aaa', marginTop: '4px' }}>
-          click to → {STATUS_LABEL[STATUS_NEXT[task.status]]}
+        <div style={{ textAlign: 'center', fontSize: '10px', color: 'var(--slate-400)', marginTop: '4px' }}>
+          → {nextLabel}
         </div>
       )}
 
-      {/* Error state — shows when server rejects */}
       {showError && (
         <div style={{
-          marginTop: '8px',
-          padding: '6px',
-          background: '#fff0f0',
-          border: '1px solid #ffcccc',
-          borderRadius: '6px',
-          color: '#cc0000',
-          fontSize: '11px',
-          textAlign: 'center',
+          marginTop: '8px', padding: '6px 10px',
+          background: 'var(--red-50)', border: '1px solid var(--red-100)',
+          borderRadius: 'var(--radius-sm)', color: 'var(--red-600)',
+          fontSize: '11px', textAlign: 'center',
         }}>
-          ⚠️ Failed to update. Reverted.
+          ⚠ Failed to update. Reverted.
         </div>
       )}
     </div>

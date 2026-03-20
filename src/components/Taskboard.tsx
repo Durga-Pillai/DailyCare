@@ -1,112 +1,145 @@
-// src/components/Taskboard.tsx
-
+import { useState } from 'react'
 import { usePatients } from '../state/usePatients'
 import { useTasks } from '../state/useTasks'
 import { useFilters, applyFilters } from '../state/useFilters'
 import FilterBar from './FilterBar'
 import TaskCard from './TaskCard'
-import { useState } from 'react'
 import CreateTaskModal from './CreateTaskModal'
+import type { Patient, TaskStatus } from '../api/types'
 
-const STATUS_COLUMNS = ['todo', 'in_progress', 'done'] as const
-const COLUMN_LABEL = {
-  todo:        '⬜ Todo',
-  in_progress: '🟡 In Progress',
-  done:        '✅ Done',
-}
+const COLUMNS: { key: TaskStatus; label: string; color: string; bg: string }[] = [
+  { key: 'todo',        label: 'To Do',      color: 'var(--slate-500)', bg: 'var(--slate-100)' },
+  { key: 'in_progress', label: 'In Progress', color: 'var(--amber-600)', bg: 'var(--amber-50)'  },
+  { key: 'done',        label: 'Done',        color: 'var(--green-600)', bg: 'var(--green-50)'  },
+]
 
-function PatientRow({ patientId, patientName, age, dialysisType, patient }: {
-  patientId: string
-  patientName: string
-  age: number
-  dialysisType: string
-  patient: import('../api/types').Patient
-}) {
-  const { tasks, isLoading } = useTasks(patientId)
+function PatientRow({ patient }: { patient: Patient }) {
+  const { tasks, isLoading } = useTasks(patient.id)
   const { selectedRoles, timeFilter } = useFilters()
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal]   = useState(false)
+  const [collapsed, setCollapsed]   = useState(false)
 
-  if (isLoading) return <div>Loading tasks...</div>
-
-  const filtered = applyFilters(tasks, selectedRoles, timeFilter)
+  const filtered     = applyFilters(tasks, selectedRoles, timeFilter)
+  const overdueTasks = tasks.filter(t => {
+    const today = new Date(); today.setHours(0,0,0,0)
+    const due   = new Date(t.dueDate); due.setHours(0,0,0,0)
+    return due < today && t.status !== 'done'
+  }).length
 
   return (
     <div style={{
-      marginBottom: '24px',
-      padding:      '16px',
-      border:       '1px solid #ddd',
-      borderRadius: '12px',
+      background: '#fff',
+      border: '1px solid var(--slate-200)',
+      borderRadius: 'var(--radius-lg)',
+      marginBottom: '16px',
+      boxShadow: 'var(--shadow-sm)',
+      overflow: 'hidden',
     }}>
-      {/* Patient header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <h3 style={{ margin: 0, fontSize: '15px' }}>
-          {patientName}
-          <span style={{ fontWeight: 400, color: '#666', marginLeft: '8px' }}>
-            Age {age} · {dialysisType}
-          </span>
-        </h3>
-        <button
-          onClick={() => setShowModal(true)}
-          style={{
-            padding:      '5px 14px',
-            borderRadius: '8px',
-            border:       'none',
-            background:   '#1a1a1a',
-            color:        '#fff',
-            cursor:       'pointer',
-            fontSize:     '13px',
-            fontWeight:   600,
-          }}
-        >
-          + Add Task
-        </button>
+      {/* Header */}
+      <div
+        onClick={() => setCollapsed(c => !c)}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '14px 20px',
+          borderBottom: collapsed ? 'none' : '1px solid var(--slate-100)',
+          background: 'var(--slate-50)', cursor: 'pointer',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '36px', height: '36px', borderRadius: '50%',
+            background: 'var(--blue-100)', color: 'var(--blue-700)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '13px', fontWeight: 700, flexShrink: 0,
+          }}>
+            {patient.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+          </div>
+          <div>
+            <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--slate-800)', letterSpacing: '-0.2px' }}>
+              {patient.name}
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--slate-400)', marginTop: '1px' }}>
+              Age {patient.age} · {patient.dialysisType}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: '6px', marginLeft: '4px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 500, background: 'var(--blue-50)', color: 'var(--blue-700)', padding: '2px 8px', borderRadius: '99px' }}>
+              {tasks.length} task{tasks.length !== 1 ? 's' : ''}
+            </span>
+            {overdueTasks > 0 && (
+              <span style={{ fontSize: '11px', fontWeight: 600, background: 'var(--red-50)', color: 'var(--red-600)', padding: '2px 8px', borderRadius: '99px' }}>
+                {overdueTasks} overdue
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <button
+            onClick={e => { e.stopPropagation(); setShowModal(true) }}
+            style={{
+              padding: '6px 14px', borderRadius: 'var(--radius-sm)',
+              border: 'none', background: 'var(--blue-600)', color: '#fff',
+              fontSize: '12px', fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'var(--font-sans)',
+            }}
+          >
+            + Add Task
+          </button>
+          <span style={{
+            fontSize: '12px', color: 'var(--slate-400)',
+            display: 'inline-block',
+            transform: collapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+            transition: 'transform 0.2s',
+          }}>▾</span>
+        </div>
       </div>
 
       {/* Columns */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-        {STATUS_COLUMNS.map(status => {
-          const columnTasks = filtered.filter(t => t.status === status)
-          return (
-            <div key={status}>
-              <div style={{
-                fontWeight:    600,
-                fontSize:      '12px',
-                color:         '#666',
-                marginBottom:  '8px',
-                paddingBottom: '6px',
-                borderBottom:  '2px solid #eee',
+      {!collapsed && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
+          {COLUMNS.map((col, i) => {
+            const colTasks = filtered.filter(t => t.status === col.key)
+            return (
+              <div key={col.key} style={{
+                padding: '16px',
+                borderRight: i < 2 ? '1px solid var(--slate-100)' : 'none',
+                minHeight: '120px',
               }}>
-                {COLUMN_LABEL[status]}
-                <span style={{
-                  marginLeft:   '6px',
-                  background:   '#eee',
-                  borderRadius: '10px',
-                  padding:      '1px 7px',
-                  fontSize:     '11px',
-                }}>
-                  {columnTasks.length}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {columnTasks.length === 0
-                  ? <div style={{ color: '#ccc', fontSize: '12px' }}>No tasks</div>
-                  : columnTasks.map(task => (
-                      <TaskCard key={task.id} task={task} patientId={patientId} />
-                    ))
-                }
-              </div>
-            </div>
-          )
-        })}
-      </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <span style={{
+                    fontSize: '11px', fontWeight: 700,
+                    color: col.color, background: col.bg,
+                    padding: '3px 10px', borderRadius: '99px',
+                    textTransform: 'uppercase', letterSpacing: '0.5px',
+                  }}>
+                    {col.label}
+                  </span>
+                  <span style={{ fontSize: '11px', color: 'var(--slate-400)', fontFamily: 'var(--font-mono)' }}>
+                    {colTasks.length}
+                  </span>
+                </div>
 
-      {/* Modal */}
-      {showModal && (
-        <CreateTaskModal
-          patient={patient}
-          onClose={() => setShowModal(false)}
-        />
+                {isLoading ? (
+                  <div style={{ height: '60px', background: 'var(--slate-100)', borderRadius: 'var(--radius-md)' }} />
+                ) : colTasks.length === 0 ? (
+                  <div style={{ fontSize: '12px', color: 'var(--slate-300)', textAlign: 'center', paddingTop: '20px' }}>
+                    No tasks
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {colTasks.map(task => (
+                      <TaskCard key={task.id} task={task} patientId={patient.id} />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
       )}
+
+      {showModal && <CreateTaskModal patient={patient} onClose={() => setShowModal(false)} />}
     </div>
   )
 }
@@ -114,22 +147,24 @@ function PatientRow({ patientId, patientName, age, dialysisType, patient }: {
 export default function Taskboard() {
   const { patients, isLoading, isError } = usePatients()
 
-  if (isLoading) return <div>Loading patients...</div>
-  if (isError)   return <div>Failed to load patients.</div>
+  if (isLoading) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {[1,2,3].map(i => (
+        <div key={i} style={{ height: '80px', background: '#fff', border: '1px solid var(--slate-200)', borderRadius: 'var(--radius-lg)' }} />
+      ))}
+    </div>
+  )
+
+  if (isError) return (
+    <div style={{ padding: '20px', background: 'var(--red-50)', border: '1px solid var(--red-100)', borderRadius: 'var(--radius-md)', color: 'var(--red-600)', fontSize: '14px' }}>
+      ⚠ Failed to load patients. Please refresh.
+    </div>
+  )
 
   return (
     <div>
       <FilterBar />
-      {patients.map(p => (
-        <PatientRow
-          key={p.id}
-          patientId={p.id}
-          patientName={p.name}
-          age={p.age}
-          dialysisType={p.dialysisType}
-           patient={p}
-        />
-      ))}
+      {patients.map(p => <PatientRow key={p.id} patient={p} />)}
     </div>
   )
 }
