@@ -1,7 +1,7 @@
 // src/state/useFilters.ts
 
 import { create } from 'zustand'
-import type { Role, TaskStatus } from '../api/types'
+import type { Role } from '../api/types'
 
 export type TimeFilter = 'all' | 'overdue' | 'due_today' | 'upcoming'
 
