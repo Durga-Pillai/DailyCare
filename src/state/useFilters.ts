@@ -8,16 +8,19 @@ export type TimeFilter = 'all' | 'overdue' | 'due_today' | 'upcoming'
 interface FilterState {
   selectedRoles: Role[]
   timeFilter: TimeFilter
+  searchQuery: string
 
   // Actions
   toggleRole: (role: Role) => void
   setTimeFilter: (filter: TimeFilter) => void
   resetFilters: () => void
+  setSearchQuery:(query: string )=> void
 }
 
 export const useFilters = create<FilterState>(set => ({
   selectedRoles: [],       // empty = show all roles
   timeFilter: 'all',
+  searchQuery: '',
 
   toggleRole: (role) =>
     set(state => ({
@@ -27,7 +30,7 @@ export const useFilters = create<FilterState>(set => ({
     })),
 
   setTimeFilter: (filter) => set({ timeFilter: filter }),
-
+    setSearchQuery:(query) => set({searchQuery:query}),
   resetFilters: () => set({ selectedRoles: [], timeFilter: 'all' }),
 }))
 

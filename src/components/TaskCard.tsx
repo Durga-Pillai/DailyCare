@@ -77,7 +77,7 @@ export default function TaskCard({ task, patientId }: Props) {
       </div>
 
       <div style={{
-        fontSize: '11px', fontFamily: 'var(--font-mono)',
+        fontSize: '13px', fontFamily: 'var(--font-mono)',
         color: isOverdue ? 'var(--red-600)' : isDueToday ? 'var(--amber-600)' : 'var(--slate-400)',
         marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '4px',
       }}>
@@ -95,7 +95,7 @@ export default function TaskCard({ task, patientId }: Props) {
           borderRadius: 'var(--radius-sm)',
           border: `1px solid ${statusCfg.border}`,
           background: statusCfg.bg, color: statusCfg.color,
-          fontSize: '11px', fontWeight: 600,
+          fontSize: '13px', fontWeight: 600,
           fontFamily: 'var(--font-sans)',
           cursor: isPending ? 'not-allowed' : 'pointer',
           transition: 'all 0.15s',
@@ -115,7 +115,7 @@ export default function TaskCard({ task, patientId }: Props) {
           marginTop: '8px', padding: '6px 10px',
           background: 'var(--red-50)', border: '1px solid var(--red-100)',
           borderRadius: 'var(--radius-sm)', color: 'var(--red-600)',
-          fontSize: '11px', textAlign: 'center',
+          fontSize: '13px', textAlign: 'center',
         }}>
           ⚠ Failed to update. Reverted.
         </div>

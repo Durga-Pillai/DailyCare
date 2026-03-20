@@ -42,6 +42,7 @@
   --font-sans: 'DM Sans', sans-serif;
   --font-mono: 'DM Mono', monospace;
 
+
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 14px;
@@ -57,7 +58,7 @@ html, body, #root {
   font-family: var(--font-sans);
   background: var(--slate-50);
   color: var(--slate-800);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }

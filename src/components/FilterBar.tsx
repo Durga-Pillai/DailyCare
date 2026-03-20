@@ -1,5 +1,6 @@
+// src/components/FilterBar.tsx
 import { useFilters } from '../state/useFilters'
-import type{TimeFilter} from '../state/useFilters'
+import type { TimeFilter } from '../state/useFilters'
 import type { Role } from '../api/types'
 
 const ROLES: { value: Role; label: string; color: string }[] = [
@@ -16,8 +17,17 @@ const TIME_FILTERS: { value: TimeFilter; label: string; dot?: string }[] = [
 ]
 
 export default function FilterBar() {
-  const { selectedRoles, timeFilter, toggleRole, setTimeFilter, resetFilters } = useFilters()
-  const hasFilters = selectedRoles.length > 0 || timeFilter !== 'all'
+  const {
+    selectedRoles,
+    timeFilter,
+    searchQuery,
+    toggleRole,
+    setTimeFilter,
+    setSearchQuery,
+    resetFilters,
+  } = useFilters()
+
+  const hasFilters = selectedRoles.length > 0 || timeFilter !== 'all' || searchQuery !== ''
 
   return (
     <div style={{
@@ -28,12 +38,60 @@ export default function FilterBar() {
       marginBottom: '20px',
       display: 'flex',
       flexWrap: 'wrap',
-      gap: '20px',
+      gap: '16px',
       alignItems: 'center',
       boxShadow: 'var(--shadow-sm)',
     }}>
+
+      {/* Search */}
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', gap: '8px',
+          background: 'var(--slate-50)',
+          border: '1.5px solid var(--slate-200)',
+          borderRadius: 'var(--radius-sm)',
+          padding: '5px 12px',
+          minWidth: '200px',
+          transition: 'border-color 0.15s',
+        }}
+        onFocusCapture={e => (e.currentTarget.style.borderColor = 'var(--blue-500)')}
+        onBlurCapture={e  => (e.currentTarget.style.borderColor = 'var(--slate-200)')}
+      >
+        <span style={{ fontSize: '13px', color: 'var(--slate-400)', flexShrink: 0 }}>🔍</span>
+        <input
+          type="text"
+          placeholder="Search patient..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          style={{
+            border: 'none', outline: 'none',
+            background: 'transparent',
+            fontSize: '13px',
+            color: 'var(--slate-700)',
+            fontFamily: 'var(--font-sans)',
+            width: '100%',
+          }}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery('')}
+            style={{
+              background: 'none', border: 'none',
+              cursor: 'pointer', color: 'var(--slate-400)',
+              fontSize: '12px', padding: '0', flexShrink: 0,
+            }}
+          >✕</button>
+        )}
+      </div>
+
+      <div style={{ width: '1px', height: '20px', background: 'var(--slate-200)', flexShrink: 0 }} />
+
+      {/* Role */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.6px', marginRight: '4px' }}>
+        <span style={{
+          fontSize: '11px', fontWeight: 600, color: 'var(--slate-400)',
+          textTransform: 'uppercase', letterSpacing: '0.6px', marginRight: '4px',
+        }}>
           Role
         </span>
         {ROLES.map(role => {
@@ -56,8 +114,12 @@ export default function FilterBar() {
 
       <div style={{ width: '1px', height: '20px', background: 'var(--slate-200)', flexShrink: 0 }} />
 
+      {/* Time */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-        <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '0.6px', marginRight: '4px' }}>
+        <span style={{
+          fontSize: '11px', fontWeight: 600, color: 'var(--slate-400)',
+          textTransform: 'uppercase', letterSpacing: '0.6px', marginRight: '4px',
+        }}>
           Time
         </span>
         {TIME_FILTERS.map(tf => {
@@ -82,6 +144,7 @@ export default function FilterBar() {
         })}
       </div>
 
+      {/* Reset */}
       {hasFilters && (
         <button onClick={resetFilters} style={{
           marginLeft: 'auto', padding: '5px 12px', borderRadius: '99px',
