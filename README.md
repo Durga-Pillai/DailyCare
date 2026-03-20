@@ -4,6 +4,10 @@ A frontend task management system for dialysis teams built with React + TypeScri
 Manages recurring and ad-hoc patient tasks across multiple roles — nurse, dietician,
 and social worker.
 
+##Live Demo
+https://daily-care-lovat.vercel.app/
+
+
 git clone https://github.com/Durga-Pillai/DailyCare.git
 cd DailyCare
 
@@ -93,6 +97,9 @@ at scale compared to Tailwind or CSS modules.
 - Add a real backend
 - Add Authentication
 - Make the layout responsive
+- Link the work to a dialysis center
+
+
 
 
 
