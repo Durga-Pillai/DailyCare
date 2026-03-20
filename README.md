@@ -81,7 +81,6 @@ render it. No direct API calls anywhere in components.
 Every PATCH immediately updates the UI before the server confirms.
 This feels fast but means the UI can briefly show an incorrect state
 if the network is slow and the server rejects the update.
-The rollback in `onError` corrects this but the user may notice the flicker.
 
 **MSW over a real stub backend**
 MSW runs entirely in the browser — no separate process needed.
@@ -98,6 +97,29 @@ at scale compared to Tailwind or CSS modules.
 - Add Authentication
 - Make the layout responsive
 - Link the work to a dialysis center
+
+
+## AI Usage
+
+AI used - Claude
+
+- **Boilerplate generation** - MSW handlers for stub backend,Typecript interfaces to speed up set up
+- **Debugging** - resolving TypeScript errors, test failures, and MSW configuration issues that came up during development
+
+## What I reveiwed and changed manually
+
+-Verified the update and rollback logic in `useTasks.ts` to confirm restore worked correctly
+- Added delete feature for completed task
+- Adjusted the Ui - removed unnecessay emaji,changed the font to Nunito, added patient search, fixed the status cycle logic so done tasks cannot be cycled back to todo.
+
+### One example where I disagreed with AI output
+
+The initaila generated code was a status cycle that went todo-> in progress -> done ->todo.
+
+resolving TypeScript errors, test failures, and MSW
+configuration issues that came up during development
+
+Fixed it by checking if the status is completed then not to have a next_status state(boolean conditional check).
 
 
 
