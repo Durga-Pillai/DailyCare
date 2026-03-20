@@ -7,6 +7,7 @@ interface Props { task: Task; patientId: string }
 const STATUS_NEXT: Partial<Record<TaskStatus, TaskStatus>> = {
   todo:        'in_progress',
   in_progress: 'done',
+  
 }
 
 const STATUS_CONFIG: Record<TaskStatus, { label: string; bg: string; color: string; border: string }> = {
