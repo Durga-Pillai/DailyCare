@@ -1,5 +1,3 @@
-// src/api/apiClient.ts
-
 import axios, { AxiosError } from 'axios'
 import type { Patient, Task, CreateTaskDTO, UpdateTaskDTO } from './types'
 

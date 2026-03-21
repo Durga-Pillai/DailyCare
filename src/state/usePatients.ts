@@ -1,5 +1,3 @@
-// src/state/usePatients.ts
-
 import { useQuery } from '@tanstack/react-query'
 import { fetchPatients } from '../api/client'
 

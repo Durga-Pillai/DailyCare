@@ -1,5 +1,3 @@
-// src/api/msw/handlers.ts
-
 import { http, HttpResponse } from 'msw'
 import type { Patient, Task } from '../types'
 

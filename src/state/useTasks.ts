@@ -1,4 +1,3 @@
-// src/state/useTasks.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchTasks, createTask, updateTask, deleteTask } from '../api/client'
 import type { Task, CreateTaskDTO, UpdateTaskDTO } from '../api/types'

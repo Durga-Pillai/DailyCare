@@ -1,5 +1,3 @@
-// src/api/types.ts
-
 export type Role = 'nurse' | 'dietician' | 'social_worker'
 
 export type TaskStatus = 'todo' | 'in_progress' | 'done'

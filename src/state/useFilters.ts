@@ -1,5 +1,3 @@
-// src/state/useFilters.ts
-
 import { create } from 'zustand'
 import type { Role } from '../api/types'
 

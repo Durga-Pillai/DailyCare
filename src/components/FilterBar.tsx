@@ -1,4 +1,3 @@
-// src/components/FilterBar.tsx
 import { useFilters } from '../state/useFilters'
 import type { TimeFilter } from '../state/useFilters'
 import type { Role } from '../api/types'
