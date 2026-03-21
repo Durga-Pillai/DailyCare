@@ -110,16 +110,11 @@ AI used - Claude
 
 -Verified the update and rollback logic in `useTasks.ts` to confirm restore worked correctly
 - Added delete feature for completed task
-- Adjusted the Ui - removed unnecessay emaji,changed the font to Nunito, added patient search, fixed the status cycle logic so done tasks cannot be cycled back to todo.
+- Adjusted the UI - removed unnecessay emoji,changed the font to Nunito, added patient search, fixed the status cycle logic so done tasks cannot be cycled back to todo.
 
 ### One example where I disagreed with AI output
+One instance where I disagreed with the AI-generated output was when it implemented a status cycle as todo → in progress → done → todo, which incorrectly allowed completed tasks to return to the initial state. I corrected this by adding a conditional check to ensure that once the status reaches completed, it does not transition further.
 
-The initaila generated code was a status cycle that went todo-> in progress -> done ->todo
-
-resolving TypeScript errors, test failures, and MSW
-configuration issues that came up during development
-
-Fixed it by checking if the status is completed then not to have a next_status state(boolean conditional check).
 
 
 
